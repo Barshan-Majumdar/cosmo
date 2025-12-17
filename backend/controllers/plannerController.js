@@ -1,6 +1,6 @@
 import StudyPlan from '../models/StudyPlan.js';
 import CalendarEvent from '../models/CalendarEvent.js';
-import { generateStudyPlanWithAI } from '../services/geminiService.js';
+import { generateStudyPlanWithAI } from '../services/geminiServices/planner.js';
 import { createCalendarEvents, getCalendarEvents, updateEventCompletion } from '../services/plannerEngine.js';
 
 /**

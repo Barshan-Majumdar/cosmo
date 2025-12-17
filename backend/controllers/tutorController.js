@@ -1,4 +1,5 @@
-import { explainTopicWithAnalogy, generateQuiz } from '../services/geminiService.js';
+import { explainTopicWithAnalogy } from '../services/geminiServices/tutor.js';
+import { generateQuiz } from '../services/geminiServices/quiz.js';
 import QuizResult from '../models/QuizResult.js';
 import User from '../models/User.js';
 
