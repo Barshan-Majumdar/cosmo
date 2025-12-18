@@ -6,6 +6,8 @@ import { Dashboard } from "./pages/Dashboard";
 import { SyllabusUpload } from "./pages/SyllabusUpload";
 import { StudyPlanner } from "./pages/StudyPlanner";
 import { AITutor } from "./pages/AITutor";
+import { SignInPage } from "./pages/SignInPage";
+import { SignUpPage } from "./pages/SignUpPage";
 import ScrollToTop from "./components/layout/ScrollToTop";
 
 // Retrieve Clerk Publishable Key from environment variables
@@ -30,6 +32,10 @@ function App() {
       <BrowserRouter>
         <ScrollToTop />
         <Routes>
+          {/* Auth Routes - Outside Layout */}
+          <Route path="/sign-in/*" element={<SignInPage />} />
+          <Route path="/sign-up/*" element={<SignUpPage />} />
+          
           <Route path="/" element={<Layout />}>
             <Route index element={<LandingPage />} />
             
@@ -67,3 +73,4 @@ function App() {
 }
 
 export default App;
+

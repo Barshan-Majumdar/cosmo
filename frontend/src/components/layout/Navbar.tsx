@@ -2,7 +2,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '../ui/Button';
 import { Rocket } from 'lucide-react';
 import { cn } from '../../lib/utils';
-import { SignedIn, SignedOut, UserButton, SignInButton } from "@clerk/clerk-react";
+import { SignedIn, SignedOut, UserButton } from "@clerk/clerk-react";
 
 export function Navbar() {
   const location = useLocation();
@@ -95,11 +95,16 @@ export function Navbar() {
 
         <div className="flex items-center gap-3">
           <SignedOut>
-            <SignInButton mode="modal" forceRedirectUrl="/dashboard">
+            <Link to="/sign-in">
+              <Button variant="ghost" size="sm" className="h-8 text-xs rounded-full px-4 text-gray-400 hover:text-white hover:bg-white/5">
+                Sign In
+              </Button>
+            </Link>
+            <Link to="/sign-up">
               <Button variant="outline" size="sm" className="h-8 text-xs rounded-full px-4 bg-white text-black border-none hover:bg-gray-200 hover:text-black font-semibold">
                 Get Started
               </Button>
-            </SignInButton>
+            </Link>
           </SignedOut>
 
           <SignedIn>
@@ -115,3 +120,4 @@ export function Navbar() {
     </div>
   );
 }
+
