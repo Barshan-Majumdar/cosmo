@@ -22,6 +22,20 @@ export function Navbar() {
     }
   };
 
+  const handlePricingClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (location.pathname !== '/') {
+      navigate('/');
+      setTimeout(() => {
+        const element = document.getElementById('pricing');
+        if (element) element.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+    } else {
+      const element = document.getElementById('pricing');
+      if (element) element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
     <div className="fixed top-6 left-0 right-0 z-50 flex justify-center px-4">
       <nav className="bg-[#050505]/80 backdrop-blur-md border border-white/10 rounded-full px-6 h-14 flex items-center shadow-2xl w-full max-w-4xl justify-between">
@@ -50,6 +64,13 @@ export function Navbar() {
              >
                Features
              </a>
+             <a 
+               href="#pricing" 
+               className="text-xs font-medium text-gray-400 hover:text-white transition-colors"
+               onClick={handlePricingClick}
+             >
+               Pricing
+             </a>
           </SignedOut>
 
           <SignedIn>
@@ -74,7 +95,7 @@ export function Navbar() {
 
         <div className="flex items-center gap-3">
           <SignedOut>
-            <SignInButton mode="modal">
+            <SignInButton mode="modal" forceRedirectUrl="/dashboard">
               <Button variant="outline" size="sm" className="h-8 text-xs rounded-full px-4 bg-white text-black border-none hover:bg-gray-200 hover:text-black font-semibold">
                 Get Started
               </Button>

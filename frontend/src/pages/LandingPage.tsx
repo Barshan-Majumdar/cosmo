@@ -4,6 +4,7 @@ import { Features } from "./Features";
 import { Testimonials } from "../components/landing/Testimonials";
 import { FAQ } from "../components/landing/FAQ";
 import { CTA } from "../components/landing/CTA";
+import { Pricing } from "../components/landing/Pricing";
 import { motion, useMotionTemplate, useMotionValue, useSpring } from "framer-motion";
 import type { MouseEvent } from "react";
 
@@ -91,7 +92,7 @@ export function LandingPage() {
         <div className="text-center mb-16 relative">
           <div className="absolute top-1/2 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
           <span className="relative inline-flex items-center gap-3 bg-[#050505] px-6 py-2 rounded-full border border-white/10 text-sm text-gray-300 font-medium shadow-[0_0_30px_-10px_rgba(255,255,255,0.1)]">
-            <span className="w-1.5 h-1.5 rounded-full bg-teal-500 shadow-[0_0_10px_rgba(20,184,166,0.5)] animate-pulse"></span>
+            <span className="w-1.5 h-1.5 rounded-full bg-gray-500 shadow-[0_0_10px_rgba(20,184,166,0.5)] animate-pulse"></span>
             Powering Your Success
           </span>
         </div>
@@ -100,6 +101,9 @@ export function LandingPage() {
 
       {/* Social Proof */}
       <Testimonials />
+
+      {/* Pricing */}
+      <Pricing />
 
       {/* FAQ */}
       <FAQ />
