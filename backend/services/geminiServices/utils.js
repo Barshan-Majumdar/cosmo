@@ -11,7 +11,11 @@ export const generateContentWithRetry = async (model, prompt, retries = 3) => {
             return result;
         } catch (error) {
             lastError = error;
-            const isOverloaded = error.message.includes('503') || error.message.includes('overloaded');
+            const isOverloaded =
+                error.status === 503 ||
+                (error.statusText && error.statusText.includes('Overloaded')) ||
+                error.message.includes('503') ||
+                error.message.includes('overloaded');
 
             if (isOverloaded && i < retries - 1) {
                 // Exponential backoff: 1s, 2s, 4s
