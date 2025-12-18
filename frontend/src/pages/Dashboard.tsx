@@ -23,10 +23,10 @@ export function Dashboard() {
           const events = calendarRes.data.slice(0, 5);
           setUpcomingTasks(events.map((e: any) => ({
             title: e.topic || e.title,
-            date: new Date(e.start).toLocaleDateString('en-US', { 
-              weekday: 'short', 
-              hour: '2-digit', 
-              minute: '2-digit' 
+            date: new Date(e.start || e.date).toLocaleString('en-US', {
+              weekday: 'short',
+              hour: '2-digit',
+              minute: '2-digit'
             }),
             type: e.type || 'Study'
           })));
