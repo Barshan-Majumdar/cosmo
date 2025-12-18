@@ -24,10 +24,10 @@ export function Navbar() {
 
   return (
     <div className="fixed top-6 left-0 right-0 z-50 flex justify-center px-4">
-      <nav className="bg-brand-dark/80 backdrop-blur-md border border-brand-gray rounded-full px-6 h-14 flex items-center shadow-lg w-full max-w-4xl justify-between">
+      <nav className="bg-[#050505]/80 backdrop-blur-md border border-white/10 rounded-full px-6 h-14 flex items-center shadow-2xl w-full max-w-4xl justify-between">
         
         <Link to="/" className="flex items-center gap-2 group">
-          <div className="bg-white text-brand-black p-1 rounded-full group-hover:scale-110 transition-transform">
+          <div className="bg-white text-black p-1 rounded-full group-hover:scale-110 transition-transform">
              <Rocket className="w-4 h-4 fill-current" />
           </div>
           <span className="font-bold text-sm tracking-wide text-brand-text">Learn-Flow</span>
@@ -38,14 +38,14 @@ export function Navbar() {
           <SignedOut>
              <Link 
                to="/" 
-               className="text-xs font-medium text-brand-text-muted hover:text-white transition-colors"
+               className="text-xs font-medium text-gray-400 hover:text-white transition-colors"
                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
              >
                Home
              </Link>
              <a 
                href="#features" 
-               className="text-xs font-medium text-brand-text-muted hover:text-white transition-colors"
+               className="text-xs font-medium text-gray-400 hover:text-white transition-colors"
                onClick={handleFeaturesClick}
              >
                Features
@@ -63,7 +63,7 @@ export function Navbar() {
                 to={link.path} 
                 className={cn(
                   "text-xs font-medium transition-colors hover:text-white",
-                  location.pathname === link.path ? "text-white" : "text-brand-text-muted"
+                  location.pathname === link.path ? "text-white" : "text-gray-400"
                 )}
               >
                 {link.name}
