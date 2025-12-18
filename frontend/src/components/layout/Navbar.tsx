@@ -22,6 +22,20 @@ export function Navbar() {
     }
   };
 
+  const handlePricingClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (location.pathname !== '/') {
+      navigate('/');
+      setTimeout(() => {
+        const element = document.getElementById('pricing');
+        if (element) element.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+    } else {
+      const element = document.getElementById('pricing');
+      if (element) element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
     <div className="fixed top-6 left-0 right-0 z-50 flex justify-center px-4">
       <nav className="bg-[#050505]/80 backdrop-blur-md border border-white/10 rounded-full px-6 h-14 flex items-center shadow-2xl w-full max-w-4xl justify-between">
@@ -49,6 +63,13 @@ export function Navbar() {
                onClick={handleFeaturesClick}
              >
                Features
+             </a>
+             <a 
+               href="#pricing" 
+               className="text-xs font-medium text-gray-400 hover:text-white transition-colors"
+               onClick={handlePricingClick}
+             >
+               Pricing
              </a>
           </SignedOut>
 
