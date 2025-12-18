@@ -1,5 +1,6 @@
 import { Check } from "lucide-react";
 import { Button } from "../ui/Button";
+import { Link } from "react-router-dom";
 
 const plans = [
   {
@@ -74,15 +75,17 @@ export function Pricing() {
               ))}
             </div>
 
-            <Button 
-              className={`w-full rounded-full h-12 font-medium tracking-wide transition-all ${
-                plan.highlight 
-                  ? "bg-white text-black hover:bg-gray-200" 
-                  : "bg-white/5 text-white hover:bg-white/10 border border-white/10"
-              }`}
-            >
-              Get Started
-            </Button>
+            <Link to="/dashboard" className="w-full">
+              <Button 
+                className={`w-full rounded-full h-12 font-medium tracking-wide transition-all ${
+                  plan.highlight 
+                    ? "bg-white text-black hover:bg-gray-200" 
+                    : "bg-white/5 text-white hover:bg-white/10 border border-white/10"
+                }`}
+              >
+                Get Started
+              </Button>
+            </Link>
           </div>
         ))}
       </div>

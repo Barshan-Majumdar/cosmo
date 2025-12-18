@@ -95,7 +95,7 @@ export function Navbar() {
 
         <div className="flex items-center gap-3">
           <SignedOut>
-            <SignInButton mode="modal">
+            <SignInButton mode="modal" forceRedirectUrl="/dashboard">
               <Button variant="outline" size="sm" className="h-8 text-xs rounded-full px-4 bg-white text-black border-none hover:bg-gray-200 hover:text-black font-semibold">
                 Get Started
               </Button>
