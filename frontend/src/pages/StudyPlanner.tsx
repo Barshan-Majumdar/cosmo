@@ -7,8 +7,8 @@ import { Button } from '../components/ui/Button';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useUser } from '@clerk/clerk-react';
 
-import { getStudyCalendar, updateCalendarEvent, getAllStudyPlans } from '../lib/api';
-import { Loader2, RefreshCw, Upload, BookOpen, Calendar as CalendarIcon, CheckCircle2, Circle, X, Clock, AlignLeft, History, FolderOpen } from 'lucide-react';
+import { getStudyCalendar, updateCalendarEvent, getAllStudyPlans, deleteStudyPlan } from '../lib/api';
+import { Loader2, RefreshCw, Upload, BookOpen, Calendar as CalendarIcon, CheckCircle2, Circle, X, Clock, AlignLeft, History, FolderOpen, Trash2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { cn } from '../lib/utils';
 import { format } from 'date-fns';
@@ -33,6 +33,29 @@ export function StudyPlanner() {
   const handleLoadPlan = (planId: string) => {
     setCurrentPlanId(planId);
     setHistoryOpen(false);
+  };
+
+  // Delete confirmation modal state
+  const [deleteModal, setDeleteModal] = useState<{isOpen: boolean; planId: string | null; planTitle: string}>({isOpen: false, planId: null, planTitle: ''});
+
+  const handleDeletePlan = async () => {
+    if (!deleteModal.planId || !userEmail) return;
+    
+    try {
+      const response = await deleteStudyPlan(deleteModal.planId, userEmail);
+      if (response.success) {
+        // Remove from local state
+        setStudyPlans(prev => prev.filter(p => p._id !== deleteModal.planId));
+        // If deleted plan was active, reset currentPlanId
+        if (currentPlanId === deleteModal.planId) {
+          setCurrentPlanId(null);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to delete plan", err);
+    } finally {
+      setDeleteModal({isOpen: false, planId: null, planTitle: ''});
+    }
   };
 
   const handleViewHistory = async () => {
@@ -156,9 +179,11 @@ export function StudyPlanner() {
 
     return (
       <div className={cn(
-        "w-full h-full p-1 flex flex-col gap-0.5 overflow-hidden border-l-4 transition-all hover:scale-[1.01] rounded-r-sm",
-        isExam ? "bg-red-500/10 border-red-500" : "bg-brand-gray border-white/20",
-        isCompleted && "opacity-60 grayscale-[0.5]"
+        "w-full p-2 flex flex-col gap-1 overflow-hidden transition-all hover:scale-[1.02] rounded-lg shadow-sm border",
+        isExam 
+          ? "bg-red-500/20 border-red-500/30 hover:bg-red-500/30" 
+          : "bg-white/5 border-white/10 hover:bg-white/10",
+        isCompleted && "opacity-50 grayscale"
       )}>
         <div className="flex items-start justify-between min-w-0">
           <span className={cn(
@@ -182,27 +207,27 @@ export function StudyPlanner() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8 h-[calc(100vh-6rem)] flex flex-col bg-brand-black text-brand-text font-inter pt-28">
-      <div className="flex justify-between items-center mb-6 shrink-0">
+    <div className="max-w-7xl mx-auto px-3 sm:px-4 py-6 sm:py-8 min-h-[calc(100vh-6rem)] flex flex-col bg-brand-black text-brand-text font-inter pt-24 sm:pt-28">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-4 shrink-0">
         <div>
-          <h1 className="text-3xl font-bold text-white flex items-center gap-3">
-            <CalendarIcon className="w-8 h-8 text-white" />
+          <h1 className="text-2xl sm:text-3xl font-bold text-white flex items-center gap-2 sm:gap-3">
+            <CalendarIcon className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
             Study Planner
           </h1>
           <p className="text-brand-text-muted mt-1">
             Track your progress and stay on schedule.
           </p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-2 sm:gap-3 w-full sm:w-auto">
           <Link to="/upload">
-            <Button variant="outline" size="sm" className="gap-2 border-brand-gray text-brand-text-muted hover:text-black">
+            <Button variant="outline" size="sm" className="gap-2 border-white/10 bg-white/5 text-brand-text-muted hover:text-white hover:bg-white/10 backdrop-blur-sm transition-all">
               <Upload className="w-4 h-4" /> New Plan
             </Button>
           </Link>
-          <Button variant="outline" size="sm" onClick={handleViewHistory} className="gap-2 border-brand-gray text-brand-text-muted hover:text-black">
+          <Button variant="outline" size="sm" onClick={handleViewHistory} className="gap-2 border-white/10 bg-white/5 text-brand-text-muted hover:text-white hover:bg-white/10 backdrop-blur-sm transition-all">
             <History className="w-4 h-4" /> History
           </Button>
-          <Button variant="default" size="sm" onClick={fetchEvents} disabled={loading} className="gap-2 bg-white text-black hover:bg-gray-200">
+          <Button variant="default" size="sm" onClick={fetchEvents} disabled={loading} className="gap-2 bg-white text-black hover:bg-gray-200 shadow-lg shadow-white/5 border border-white/20">
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
             Sync
           </Button>
@@ -215,7 +240,7 @@ export function StudyPlanner() {
         </div>
       )}
 
-      <Card className="flex-1 bg-brand-dark border-brand-gray p-4 overflow-hidden relative shadow-none full-calendar-wrapper">
+      <Card className="flex-1 bg-brand-dark/40 backdrop-blur-xl border-white/10 p-3 sm:p-6 overflow-y-auto custom-scrollbar relative shadow-2xl full-calendar-wrapper rounded-2xl sm:rounded-3xl">
         {loading && events.length === 0 ? (
           <div className="absolute inset-0 flex items-center justify-center bg-brand-black/50 z-10">
             <Loader2 className="w-10 h-10 text-white animate-spin" />
@@ -230,7 +255,7 @@ export function StudyPlanner() {
               Ready to start learning? Upload your syllabus to automatically generate a personalized study roadmap.
             </p>
             <Link to="/upload">
-              <Button size="lg" className="gap-2 bg-white text-black hover:bg-gray-200">
+              <Button size="lg" className="gap-2 bg-gradient-to-r from-purple-500 to-indigo-600 border-0 text-white hover:opacity-90 transition-opacity">
                 <Upload className="w-5 h-5" />
                 Create Study Plan
               </Button>
@@ -240,7 +265,7 @@ export function StudyPlanner() {
           <FullCalendar
             ref={calendarRef}
             plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-            initialView="timeGridWeek"
+            initialView="dayGridMonth"
             headerToolbar={{
               left: 'prev,next today',
               center: 'title',
@@ -249,13 +274,13 @@ export function StudyPlanner() {
             events={events}
             eventContent={renderEventContent}
             eventClick={handleEventClick}
-            height="100%"
+            height="auto"
             slotMinTime="06:00:00"
             slotMaxTime="24:00:00"
             scrollTime="08:00:00"
             allDaySlot={false}
             nowIndicator={true}
-            dayMaxEvents={true}
+            dayMaxEvents={false}
           />
         )}
       </Card>
@@ -263,7 +288,7 @@ export function StudyPlanner() {
       {/* Task Details Modal */}
       {selectedEvent && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-          <Card className="bg-brand-black border border-brand-gray w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
+          <Card className="bg-brand-black border border-brand-gray w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[85vh] sm:max-h-[90vh] mx-2 sm:mx-0">
             <div className={cn(
               "p-6 border-b border-brand-gray",
               selectedEvent.type === 'exam' ? "bg-red-500/10" : "bg-brand-dark"
@@ -346,7 +371,7 @@ export function StudyPlanner() {
       {/* History Modal */}
       {historyOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-          <Card className="bg-brand-black border border-brand-gray w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[80vh]">
+          <Card className="bg-brand-black border border-brand-gray w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh] sm:max-h-[80vh] mx-2 sm:mx-0">
             <div className="p-6 border-b border-brand-gray flex justify-between items-center bg-brand-dark">
               <h3 className="text-xl font-bold text-white flex items-center gap-2">
                 <History className="w-5 h-5 text-white" /> Upload History
@@ -444,7 +469,7 @@ export function StudyPlanner() {
                         </div>
                       )}
                       
-                      <div className="grid grid-cols-4 gap-2">
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                         <div className="bg-brand-black p-2 rounded-lg text-center border border-brand-gray">
                           <span className="block text-lg font-bold text-white">{plan.subjectCount}</span>
                           <span className="text-[9px] uppercase text-gray-500 font-bold tracking-wider">Subjects</span>
@@ -466,6 +491,20 @@ export function StudyPlanner() {
                           <span className="text-[9px] uppercase text-gray-500 font-bold tracking-wider">Ready</span>
                         </div>
                       </div>
+
+                      {/* Delete Button */}
+                      <div className="mt-3 pt-3 border-t border-brand-gray flex justify-end">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setDeleteModal({isOpen: true, planId: plan._id, planTitle: plan.title || 'Untitled Plan'});
+                          }}
+                          className="flex items-center gap-1.5 text-xs text-red-400 hover:text-red-300 hover:bg-red-500/10 px-2 py-1 rounded transition-colors"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                          Delete
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -475,13 +514,53 @@ export function StudyPlanner() {
         </div>
       )}
 
+      {/* Delete Confirmation Modal */}
+      {deleteModal.isOpen && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <Card className="bg-brand-black border border-brand-gray w-full max-w-md rounded-2xl shadow-2xl overflow-hidden">
+            <div className="p-6 border-b border-brand-gray bg-red-500/10">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-red-500/20 rounded-lg">
+                  <Trash2 className="w-5 h-5 text-red-400" />
+                </div>
+                <h3 className="text-xl font-bold text-white">Delete Study Plan?</h3>
+              </div>
+            </div>
+            <div className="p-6">
+              <p className="text-brand-text-muted mb-2">
+                Are you sure you want to delete <span className="text-white font-semibold">"{deleteModal.planTitle}"</span>?
+              </p>
+              <p className="text-sm text-gray-500 mb-6">
+                This will permanently remove the plan and all associated calendar events. This action cannot be undone.
+              </p>
+              <div className="flex gap-3 justify-end">
+                <Button
+                  variant="outline"
+                  onClick={() => setDeleteModal({isOpen: false, planId: null, planTitle: ''})}
+                  className="border-brand-gray text-brand-text-muted hover:text-white"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="default"
+                  onClick={handleDeletePlan}
+                  className="bg-red-500 hover:bg-red-600 text-white"
+                >
+                  Delete Plan
+                </Button>
+              </div>
+            </div>
+          </Card>
+        </div>
+      )}
+
       <style>{`
         .full-calendar-wrapper {
           --fc-page-bg-color: transparent;
-          --fc-neutral-bg-color: rgba(255, 255, 255, 0.05);
-          --fc-list-event-hover-bg-color: rgba(255, 255, 255, 0.1);
-          --fc-today-bg-color: rgba(255, 255, 255, 0.05);
-          --fc-border-color: rgba(255, 255, 255, 0.1);
+          --fc-neutral-bg-color: transparent;
+          --fc-list-event-hover-bg-color: rgba(255, 255, 255, 0.05);
+          --fc-today-bg-color: rgba(255, 255, 255, 0.03);
+          --fc-border-color: rgba(255, 255, 255, 0.08);
           --fc-button-bg-color: rgba(255, 255, 255, 0.05);
           --fc-button-border-color: rgba(255, 255, 255, 0.1);
           --fc-button-text-color: #A1A1AA;
@@ -492,31 +571,170 @@ export function StudyPlanner() {
           --fc-event-border-color: transparent;
         }
 
+        /* Toolbar - Mobile Responsive */
         .fc .fc-toolbar-title {
           font-size: 1.25rem;
           font-weight: 700;
-          color: white;
+          letter-spacing: -0.025em;
+          background: linear-gradient(to right, #fff, #9CA3AF);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
         }
 
+        @media (min-width: 640px) {
+          .fc .fc-toolbar-title {
+            font-size: 1.5rem;
+          }
+        }
+
+        .fc .fc-toolbar.fc-header-toolbar {
+          margin-bottom: 1rem;
+          flex-wrap: wrap;
+          gap: 0.5rem;
+          row-gap: 0.75rem;
+        }
+
+        @media (min-width: 640px) {
+          .fc .fc-toolbar.fc-header-toolbar {
+            margin-bottom: 2rem;
+          }
+        }
+
+        /* Mobile: Stack toolbar sections */
+        @media (max-width: 639px) {
+          .fc .fc-toolbar.fc-header-toolbar {
+            flex-direction: column;
+            align-items: stretch;
+          }
+          
+          .fc .fc-toolbar-chunk {
+            display: flex;
+            justify-content: center;
+          }
+          
+          .fc .fc-toolbar-chunk:first-child {
+            order: 2;
+          }
+          
+          .fc .fc-toolbar-chunk:nth-child(2) {
+            order: 1;
+            margin-bottom: 0.5rem;
+          }
+          
+          .fc .fc-toolbar-chunk:last-child {
+            order: 3;
+          }
+        }
+
+        /* Headers */
         .fc .fc-col-header-cell-cushion {
           color: #A1A1AA;
-          font-size: 0.875rem;
+          font-size: 0.65rem;
           font-weight: 600;
           text-transform: uppercase;
-          padding: 12px 0;
+          letter-spacing: 0.05em;
+          padding: 8px 0;
         }
 
-        .fc .fc-timegrid-slot-label-cushion {
-          color: #71717A;
-          font-size: 0.75rem;
+        @media (min-width: 640px) {
+          .fc .fc-col-header-cell-cushion {
+            font-size: 0.75rem;
+            letter-spacing: 0.1em;
+            padding: 16px 0;
+          }
         }
 
-        .fc-theme-standard .fc-scrollgrid {
-          border: none;
-        }
-
+        /* Grid */
         .fc-theme-standard td, .fc-theme-standard th {
           border-color: var(--fc-border-color);
+        }
+        
+        .fc-theme-standard .fc-scrollgrid {
+          border: 1px solid var(--fc-border-color);
+          border-radius: 0.75rem;
+          overflow: hidden;
+        }
+
+        @media (min-width: 640px) {
+          .fc-theme-standard .fc-scrollgrid {
+            border-radius: 1rem;
+          }
+        }
+
+        /* Cells - Mobile */
+        .fc-daygrid-day-frame {
+          padding: 2px;
+          transition: background-color 0.2s;
+          min-height: auto !important;
+        }
+
+        @media (min-width: 640px) {
+          .fc-daygrid-day-frame {
+            padding: 8px;
+          }
+        }
+        
+        .fc-daygrid-day:hover .fc-daygrid-day-frame {
+          background-color: rgba(255, 255, 255, 0.02);
+        }
+
+        .fc-daygrid-day-top {
+          flex-direction: row;
+          justify-content: space-between;
+          margin-bottom: 2px;
+        }
+
+        @media (min-width: 640px) {
+          .fc-daygrid-day-top {
+            margin-bottom: 4px;
+          }
+        }
+
+        .fc-daygrid-day-number {
+          font-size: 0.7rem;
+          font-weight: 500;
+          color: #71717A;
+          padding: 2px 4px;
+          border-radius: 4px;
+        }
+
+        @media (min-width: 640px) {
+          .fc-daygrid-day-number {
+            font-size: 0.875rem;
+            padding: 4px 8px;
+            border-radius: 6px;
+          }
+        }
+        
+        .fc-day-today .fc-daygrid-day-number {
+          background-color: white;
+          color: black;
+          font-weight: 700;
+        }
+
+        /* Events Container */
+        .fc-daygrid-day-events {
+          margin: 0;
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+        }
+
+        @media (min-width: 640px) {
+          .fc-daygrid-day-events {
+            gap: 4px;
+          }
+        }
+
+        /* Mobile event styling - more compact */
+        @media (max-width: 639px) {
+          .fc-daygrid-event {
+            margin: 0 1px !important;
+          }
+          
+          .fc-daygrid-event-harness {
+            margin-top: 1px !important;
+          }
         }
 
         /* Remove default event styling to let custom content take over */
@@ -526,23 +744,86 @@ export function StudyPlanner() {
           box-shadow: none;
         }
         
-        /* Buttons */
+        .fc-h-event {
+          background-color: transparent;
+          border: none;
+        }
+
+        /* Buttons - Mobile Responsive */
         .fc .fc-button {
-          font-size: 0.875rem;
+          font-size: 0.75rem;
           font-weight: 500;
-          padding: 0.5rem 1rem;
+          padding: 0.375rem 0.75rem;
           border-radius: 0.5rem;
           text-transform: capitalize;
-          transition: all 0.2s;
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+          backdrop-filter: blur(8px);
         }
+
+        @media (min-width: 640px) {
+          .fc .fc-button {
+            font-size: 0.875rem;
+            padding: 0.5rem 1.25rem;
+            border-radius: 0.75rem;
+          }
+        }
+        
+        .fc .fc-button:hover {
+          background-color: rgba(255, 255, 255, 0.1);
+          border-color: rgba(255, 255, 255, 0.2);
+          color: white;
+          transform: translateY(-1px);
+        }
+
         .fc .fc-button:focus {
-          box-shadow: none;
+          box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1);
         }
+        
         .fc .fc-button-primary:not(:disabled):active, 
         .fc .fc-button-primary:not(:disabled).fc-button-active {
-          background-color: var(--fc-button-active-bg-color);
-          border-color: var(--fc-button-active-border-color);
-          color: var(--fc-button-active-text-color);
+          background-color: white;
+          border-color: white;
+          color: black;
+          transform: translateY(0);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Today button - hide text on mobile */
+        @media (max-width: 479px) {
+          .fc .fc-today-button {
+            padding: 0.375rem 0.5rem;
+          }
+        }
+
+        /* Button group - tighter on mobile */
+        .fc .fc-button-group {
+          gap: 0;
+        }
+
+        .fc .fc-button-group > .fc-button {
+          border-radius: 0;
+        }
+
+        .fc .fc-button-group > .fc-button:first-child {
+          border-top-left-radius: 0.5rem;
+          border-bottom-left-radius: 0.5rem;
+        }
+
+        .fc .fc-button-group > .fc-button:last-child {
+          border-top-right-radius: 0.5rem;
+          border-bottom-right-radius: 0.5rem;
+        }
+
+        @media (min-width: 640px) {
+          .fc .fc-button-group > .fc-button:first-child {
+            border-top-left-radius: 0.75rem;
+            border-bottom-left-radius: 0.75rem;
+          }
+
+          .fc .fc-button-group > .fc-button:last-child {
+            border-top-right-radius: 0.75rem;
+            border-bottom-right-radius: 0.75rem;
+          }
         }
       `}</style>
     </div>

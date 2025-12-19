@@ -8,21 +8,24 @@ const plans = [
     price: "0",
     description: "Perfect for trying out the AI capabilities.",
     features: ["5 Syllabus Parses / month", "Basic Study Schedule", "Limited AI Tutor Access", "Community Support"],
-    highlight: false
+    highlight: false,
+    upcoming: false
   },
   {
     name: "Pro",
     price: "12",
     description: "For serious students who want top grades.",
     features: ["Unlimited Syllabus Parses", "Advanced Cosmic Schedule", "Unlimited AI Tutor (GPT-4)", "Priority Support", "Progress Analytics"],
-    highlight: true
+    highlight: true,
+    upcoming: true
   },
   {
     name: "Enterprise",
     price: "Custom",
     description: "For universities and large institutions.",
     features: ["SSO Integration", "Custom Domain", "Dedicated Success Manager", "SLA Guarantee", "Advanced Reporting"],
-    highlight: false
+    highlight: false,
+    upcoming: true
   }
 ];
 
@@ -36,7 +39,7 @@ export function Pricing() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
         {plans.map((plan, i) => (
           <div 
             key={i} 
@@ -75,17 +78,30 @@ export function Pricing() {
               ))}
             </div>
 
-            <Link to="/dashboard" className="w-full">
+            {plan.upcoming ? (
               <Button 
+                onClick={() => alert(`The ${plan.name} plan is coming soon!`)}
                 className={`w-full rounded-full h-12 font-medium tracking-wide transition-all ${
                   plan.highlight 
-                    ? "bg-white text-black hover:bg-gray-200" 
-                    : "bg-white/5 text-white hover:bg-white/10 border border-white/10"
+                    ? "bg-white/50 text-black cursor-not-allowed hover:bg-white/50" 
+                    : "bg-white/5 text-gray-400 border border-white/10 hover:bg-white/5 cursor-not-allowed"
                 }`}
               >
-                Get Started
+                Upcoming
               </Button>
-            </Link>
+            ) : (
+              <Link to="/dashboard" className="w-full">
+                <Button 
+                  className={`w-full rounded-full h-12 font-medium tracking-wide transition-all ${
+                    plan.highlight 
+                      ? "bg-white text-black hover:bg-gray-200" 
+                      : "bg-white/5 text-white hover:bg-white/10 border border-white/10"
+                  }`}
+                >
+                  Get Started
+                </Button>
+              </Link>
+            )}
           </div>
         ))}
       </div>
